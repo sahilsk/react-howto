@@ -135,3 +135,137 @@ Add babel node
 start again
 
     yarn dev
+    
+
+Adding React
+---
+
+Create all react app in `lib` directory
+
+        mkdir libs/components
+        
+
+vim libs/components/index.js
+
+        
+        import  React from 'react';
+        import ReactDom from 'react-dom';
+        
+        const App = () +>{
+            <h2> Hello React </h2>
+        }
+        
+        
+        ReactDOM.render(<App/>, document.getElementById('root');
+
+
+vim index.js
+
+        ...
+        
+        <body>
+        ..
+        <div id='root'>
+        Loading...
+        </div>
+        ...
+        <script src="bundle.js" charset="utf-8"> </script>
+
+
+bundle.js << Enter Webpack
+
+
+Webpack setup
+---
+
+        yarn add react react-dom webpack
+
+
+Where to start and place bundle.js?
+
+Visit    webpack.js.org
+
+
+       const path = require('path');
+
+        const config = {
+          entry: './libs/components/Index.js',
+          output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: 'bundle.js'
+          },
+          module: {
+            rules: [
+              { test: /\.js$/, use: 'babel-loader' }
+            ]
+          }
+        };
+
+        module.exports = config;
+
+Add babel-loader
+
+        yarn add babel-loader
+        
+        
+Edit package.json
+
+        "scripts": {
+        ...
+            "webpack": "webpack -wd"   
+            }
+         ...
+
+`w` watch files
+`d`: development mde
+
+
+start again and it should generate bundle.js
+
+        yarn webpack
+
+Improve performance: Ignore node_modules in the webpack configuration
+        
+        
+            rules: [
+              { test: /\.js$/,excloude: /node_modules/, use: 'babel-loader' }
+            ]
+        
+
+Class components instead of function components
+--
+
+``` js
+class App extends React.Componet {
+    state = {
+        answer: 42
+        };
+    asyncFunc = () =>{
+        return Promise.resolve(37);
+     };
+     
+     async componentDidMount() {
+        this.setState({
+            anwer await this.asyncFunc()
+        })
+     }
+     
+     render(){
+        return (
+            <h2> Hello Class Components -- {this.state.answer} </h2>
+          );
+      }
+}
+```
+
+Need webpack polyfill for `async-await` to work
+
+    
+    yarn add babel-polyfill
+
+vim webpack.config
+
+        ...
+        entry: ['babel-polyfill', './lib/components/Index.js']
+        ...
+
