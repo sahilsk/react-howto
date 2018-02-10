@@ -64,40 +64,47 @@ Test eslint configuration
     yarn add express ejs
    
  
- config.js
+vim lib/config.js
  
     module.exports = {
       'port': process.env.PORT || 8080
     }
+    
  server.js
  
-    const epxress =   require('express');
-    const config = require('./config')
+    const express =   require('express');
+    const config = require('./config');
     const app = express();
+    app.set('view engine', 'ejs');
+
     app.use(express.static('public'));
+
+    app.get('/', (req, res) =>  {
+      res.render('index', {'answer': 42 });
+    });
+
+    app.listen(config.port, function listenHandler() {
+      console.info(`Running on ${config.port}...`);
+    });
     
-    app.listen(config.port, function listenHandler(){
-      console.info(`Running on ${config.port}`);
-    );
     
-    
-    Add templating
+Add templating
     
         mkdir views
         
 server.js
 
-  ....
-  app.use('view engine', 'ejs');
-  ...
-  app.get('/', (req, res) =>  {
-    res.render('index', {answer: 42 });
-  })
-  ...
+      ....
+      app.use('view engine', 'ejs');
+      ...
+      app.get('/', (req, res) =>  {
+        res.render('index', {answer: 42 });
+      })
+      ...
  
 touch views/index.ejs
 
-    <h2> Hello express and ejs -- <%= answer %> </h2>
+       <h2> Hello express and ejs -- <%= answer %> </h2>
    
 
 fire 'localhost:8080'
@@ -131,11 +138,15 @@ Start logs
 > Focus on Green lines. Blue lines are logs from pm2.
 
 
-Add jsx suppot
+Add babel to add jsx, class, import support
 ---
 
-Add babel to understand jsx
+Add babel to understand jsx and 'import' statements and class properties(stage-2)
 
+vim lib/server.js
+
+    import express from 'express';
+    import config from './config';
 
 vim package.js
 
@@ -148,7 +159,7 @@ vim package.js
 Add in production so that you can run commands on production servers
 (depends on prod packaging/deployment flow)
 
-    yarn add  babel-cli babel-preset-react babel-preset-env babel-preset-stage2
+    yarn add babel-cli babel-preset-react babel-preset-env babel-preset-stage-2
     
 Add babel node 
 
@@ -158,6 +169,11 @@ Add babel node
     "scripts": {
       "dev": "pm2 start lib/server.js --watch --interpreter babel-node"
       ...
+on windows
+    "scripts": {
+      "dev": "nodemon --exec babel-node .\lib\server.js"
+      ...
+
       
 
 start again
@@ -170,24 +186,25 @@ Adding React
 
 Create all react app in `lib` directory
 
-        mkdir libs/components
+        mkdir lib/components
         
 
-vim libs/components/index.js
+vim lib/components/Index.js
 
-        
+For 'import' to work you need babel polyfills.
+
         import  React from 'react';
-        import ReactDom from 'react-dom';
-        
-        const App = () +>{
+        import ReactDOM from 'react-dom';
+
+        const App = () => {
+          return (
             <h2> Hello React </h2>
-        }
-        
-        
-        ReactDOM.render(<App/>, document.getElementById('root');
+          );
+        };
+        ReactDOM.render(<App/>, document.getElementById('root'));
 
 
-vim index.js
+vim index.ejs
 
         ...
         
@@ -197,7 +214,7 @@ vim index.js
         Loading...
         </div>
         ...
-        <script src="bundle.js" charset="utf-8"> </script>
+        <script src="./dist/bundle.js" charset="utf-8"> </script>
 
 
 bundle.js << Enter Webpack
@@ -211,15 +228,17 @@ Webpack setup
 
 Where to start and place bundle.js?
 
-Visit    webpack.js.org
+Visit webpack.js.org
 
+
+vim webpack.config.js
 
        const path = require('path');
 
         const config = {
           entry: './libs/components/Index.js',
           output: {
-            path: path.resolve(__dirname, 'dist'),
+            path: path.resolve(__dirname, 'public'),
             filename: 'bundle.js'
           },
           module: {
@@ -228,8 +247,8 @@ Visit    webpack.js.org
             ]
           }
         };
-
         module.exports = config;
+
 
 Add babel-loader
 
