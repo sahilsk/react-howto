@@ -327,7 +327,137 @@ mkdir ./state-api
 
 
 
+For production
+---
+
+Separating vendor file: include 'CommonsChunkPlugin'  and require 'webpack'
+
+vim webpack.config.js
+
+        const path = require('path');
+        const webpack = require('webpack');
+
+        const config = {
+          resolve: {
+            modules: [path.resolve('./lib'), path.resolve('./node_modules')]
+          },
+          // entry: './libs/components/Index.js',
+          entry: {
+            vendor: [
+              'babel-polyfill',
+              'react',
+              'react-dom',
+              'prop-types',
+              'axios',
+              'lodash.debounce',
+              'lodash.pickby'
+            ],
+            app: ['./lib/renderers/dom.js']
+          },
+          output: {
+            path: path.resolve(__dirname, 'public'),
+            filename: '[name].js'
+          },
+          module: {
+            rules: [{
+              test: /\.js$/,
+              exclude: /node_modules/,
+              use: {
+                loader: 'babel-loader',
+                options: {
+                  presets: ['react', 'env', 'stage-2']
+                }
+              }
+            }]
+          },
+          plugins: [
+            new webpack.optimize.CommonsChunkPlugin({
+              name: 'vendor'
+            })
+          ]
+        };
+
+        module.exports = config;
 
 
+vim index.ejs
+
+         ...
+        <script src="./dist/vendor.js?version=1" charset="utf-8"> </script>
+             ...
+        <script src="./dist/app.js?version=1" charset="utf-8"> </script>
+
+
+
+Now minify the bundle files
+
+vim package.json
+
+        
+        ..
+        "scripts": {...
+        "build-webpack": "webpack -p",
+        ...
+
+Run this in production to generate minified bundled files
+
+    yarn build-webpack
+    
+
+
+Using babel-node in prodution is bad idea
+
+vim package.json
+
+`copy-file`: copy non-js files also
+
+Also, use cluster feature of pm2 to run in production.
+
+        ...
+        "scripts": {
+        ...
+         "build-node": "babel lib -d build --copy-files",
+         "start-prod": "NODE_ENV=production NODE_PATH=./build pm2 start build/server.js -i max --name appProd"
+         ..
+         },
+
+Also, insead of using `stage2`, we can be specific about our plugin list.
+
+         "babel": {
+            "presets": [
+              "react",
+              ["env", { "targets": { "node": "current" } }]
+            ],
+            "plugins": [
+              "transform-class-properties",
+              "transform-object-rest-spread"
+            ]
+          },
+        ...
+
+> async/await are supported by node natively. So, babel not required for that.
+
+    $ yarn babel-node
+
+
+
+vim webpack.config.js
+
+Tell webapck to what to build for browser, not everything.
+
+    ...
+      module: {
+        rules: [{
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['react', 'env', 'stage-2']
+            }
+          }
+        }]
+      },
+     ...
 
 
