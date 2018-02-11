@@ -275,7 +275,7 @@ Improve performance: Ignore node_modules in the webpack configuration
         
         
             rules: [
-              { test: /\.js$/,excloude: /node_modules/, use: 'babel-loader' }
+              { test: /\.js$/,exclude: /node_modules/, use: 'babel-loader' }
             ]
         
 
@@ -310,9 +310,24 @@ Need webpack polyfill for `async-await` to work
     
     yarn add babel-polyfill
 
-vim webpack.config
+vim webpack.config.js
 
         ...
-        entry: ['babel-polyfill', './lib/components/Index.js']
+        entry: ['babel-polyfill', './lib/components/Index.js'] 
         ...
+
+Working with Data
+---
+
+mkdir ./state-api
+
+
+
+
+
+
+
+
+
+
 
